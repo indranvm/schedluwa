@@ -65,6 +65,8 @@ export async function runScheduler(): Promise<{
           messageToSend
         );
 
+        console.log("[WA RESULT]", JSON.stringify(result));
+
         const reminderRef = adminDb
           .collection("users")
           .doc(uid)
