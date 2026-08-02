@@ -21,10 +21,17 @@ async function handleRun(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!isAuthorized(req)) {
     console.warn("[API] Scheduler trigger ditolak: unauthorized");
+    if (!isAuthorized(req)) {
     return NextResponse.json(
-      { success: false, error: "Unauthorized" },
-      { info : req, secret}
+      {
+        success: false,
+        error: "Unauthorized",
+        info: req,
+        secret,
+      },
+      { status: 401 }
     );
+  }
   }
 
   try {
