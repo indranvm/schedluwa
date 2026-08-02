@@ -23,7 +23,6 @@ async function handleRun(req: NextRequest) {
     console.warn("[API] Scheduler trigger ditolak: unauthorized");
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 },
       { info : req, secret}
     );
   }
