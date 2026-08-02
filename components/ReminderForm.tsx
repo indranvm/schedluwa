@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState ,useEffect } from "react";
 import { Save, RotateCcw, ChevronDown, LayoutTemplate } from "lucide-react";
 import Button from "./Button";
 import ScheduleFields from "./ScheduleFields";
 import TemplatePicker from "./TemplatePicker";
 import { dummyContacts } from "@/lib/dummy-data";
 import type { ReminderFormData, ScheduleType, ContactType, Contact } from "@/lib/types";
+import {getContacts} from "@/app/services/contacsService";
 
 const scheduleOptions: { value: ScheduleType; label: string }[] = [
   { value: "once", label: "Sekali Kirim" },
@@ -44,6 +45,9 @@ export default function ReminderForm({ editData, onSubmit }: ReminderFormProps) 
   const [variableValues, setVariableValues] = useState<
     Record<string,string>
   >({});
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  
+
 
   const handleChange = (field: keyof ReminderFormData, value: string | boolean | string[]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -142,7 +146,13 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     };
 
   // Contacts filtered by current targetType
-  const filteredContacts = dummyContacts.filter((c) => c.type === form.targetType);
+  const filteredContacts = contacts.filter((c) => c.type === form.targetType);
+
+  useEffect(() => {
+    getContacts()
+      .then(setContacts)
+      .catch((err) => console.error(err.message));
+  }, []);
 
   return (
     <>
@@ -286,7 +296,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
               <select
                 value={form.target}
                 onChange={(e) => {
-                  const contact = dummyContacts.find((c) => c.identifier === e.target.value);
+                  const contact = contacts.find((c) => c.identifier === e.target.value);
                   if (contact) handleContactSelect(contact);
                 }}
                 className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none"
