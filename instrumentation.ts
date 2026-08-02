@@ -23,8 +23,20 @@ export async function register() {
     );
   }
 
+  // Di Vercel (serverless), function ini dibekukan setelah request selesai —
+  // setInterval tidak bisa hidup terus. Scheduler di sana WAJIB dipicu dari luar
+  // (cron eksternal) yang memanggil /api/scheduler/run, bukan dari sini.
+  if (process.env.VERCEL) {
+    console.log(
+      "[Instrumentation] Terdeteksi environment Vercel — internal setInterval scheduler dilewati.\n" +
+        "Pastikan cron eksternal (cron-job.org / GitHub Actions / Vercel Cron) memanggil /api/scheduler/run secara berkala."
+    );
+    return;
+  }
+
   try {
     // Start reminder scheduler (jika Firebase Admin configured)
+    // Hanya relevan untuk self-hosted / VPS / `next start` long-running process.
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
