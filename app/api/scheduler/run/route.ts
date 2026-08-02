@@ -1,41 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runScheduler } from "@/lib/scheduler";
 
-/**
- * Cek header Authorization: Bearer <CRON_SECRET>
- * Wajib supaya endpoint ini tidak bisa dipicu sembarang orang dari internet.
- * Set CRON_SECRET di Environment Variables Vercel (dan .env lokal untuk testing).
- */
-function isAuthorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    // Kalau CRON_SECRET belum diset sama sekali, endpoint ditutup total
-    // demi keamanan (daripada terbuka tanpa proteksi).
-    return false;
-  }
-  const auth = req.headers.get("authorization");
-  return auth === `Bearer ${secret}`;
-}
 
-async function handleRun(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!isAuthorized(req)) {
-    console.warn("[API] Scheduler trigger ditolak: unauthorized");
-    if (!isAuthorized(req)) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Unauthorized",
-        info: req,
-        secret,
-      },
-      { status: 401 }
-    );
-  }
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    console.log("[API] Scheduler trigger (cron)");
+    console.log("[API] Manual scheduler trigger");
     const result = await runScheduler();
 
     return NextResponse.json({
@@ -51,12 +20,12 @@ async function handleRun(req: NextRequest) {
   }
 }
 
-// GET dipakai oleh cron eksternal (cron-job.org, dll umumnya default GET)
-export async function GET(req: NextRequest) {
-  return handleRun(req);
-}
 
-// POST tetap tersedia kalau mau trigger manual (mis. dari Postman / curl)
-export async function POST(req: NextRequest) {
-  return handleRun(req);
+export async function GET() {
+  return NextResponse.json({
+    running: !!globalThis.__schedulerIntervalId,
+    message: globalThis.__schedulerIntervalId
+      ? "Scheduler aktif (interval 60s)"
+      : "Scheduler tidak aktif",
+  });
 }
