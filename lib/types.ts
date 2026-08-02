@@ -71,7 +71,10 @@ export interface ReminderFormData {
   status: boolean;
 }
 
-export type WhatsAppStatus = "connected" | "disconnected";
+export type WhatsAppStatus =
+  | "connected"
+  | "disconnected"
+  | "waiting";
 
 export interface WhatsAppSession {
   id: string;
